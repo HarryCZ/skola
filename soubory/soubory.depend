@@ -1,3 +1,5 @@
 # depslib dependency file v1.0
-1394404200 source:c:\users\jakub\documents\skola\c\soubory\soubory.c
+1394901366 source:c:\users\jakub\documents\skola\c\soubory\soubory.c
+	<stdio.h>
+	<stdlib.h>
 

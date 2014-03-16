@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1394488875 source:c:\users\jakub\documents\skola\c\obrazek\obrazek.c
+	<stdio.h>
+	<stdlib.h>
+

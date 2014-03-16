@@ -122,87 +122,88 @@ CLOVEK *nacti_cloveka(FILE *f) {
     return cl; // Vratime cloveka
 }
 
-/* Tato funkce nacte vsechny lidi ze souboru a kazdeho vlozi na konec.
- * Vysledny seznam tedy bude obracene oproti poradi v souboru!
- *
- * UKOL: Upravte funkci tak, aby kazdeho cloveka pridala na konec seznamu, aby se poradi neobracelo.
+/*
+ * Tato funkce nacte vsechny lidi ze souboru a kazdeho nacteneho5 vlozi na konec.
+ * jako parametr pri volani ocekava ukazatel na sobor ze ktereho budeme cist
  */
 void nacti_vsechny_lidi(FILE *f) {
-    CLOVEK *cl;
+    CLOVEK *cl;//vytvoreni promenne pro drzeni aktualniho nacteneho zaznamu
     CLOVEK *posledni = NULL; // Ukazatel na posledniho pridaneho cloveka - zatim je NULL, protoze jsme jeste nikoho nepridali
 
-    cl = nacti_cloveka(f);
-    while (cl != NULL) {
+    cl = nacti_cloveka(f); // zavola funkci nacti_cloveka() a jeji vysledek ulozi do pomenne cl
+    while (cl != NULL) { // dokud existuje dalsi clovek v souboru
         if (posledni == NULL) { // Pokud jsme jeste nikoho nepridali, dame cloveka na zacatek, jinak za posledniho cloveka
-            vloz_na_zacatek(cl);
-        } else {
-            vloz_za_cloveka(posledni, cl);
+            vloz_na_zacatek(cl); // zavola funkci vloz_na_zacatek()
+        } else { // pokud uz v seznamu existuje nejaky zaznam pridavame na konec
+            vloz_za_cloveka(posledni, cl); // zavola funkci vloz_za_cloveka() s parametry "posledni" - ukazatel na posledni zaznam a "cl" - ukazatel na aktualni zaznam
         }
         posledni = cl; // Zapamatujeme si, ze pridany clovek je zatim posledni
-        cl = nacti_cloveka(f);
+        cl = nacti_cloveka(f); // nacteme dalsiho cloveka ze souboru
     }
 }
 
-/* Tato funkce ulozi vsechny lidi do souboru. */
+/* Tato funkce ulozi vsechny lidi do souboru.
+ * jako parametr pri volani ocekava ukazatel na sobor do ktereho chceme ukladat
+ */
 void uloz_vsechny_lidi(FILE *f) {
-    CLOVEK *cl;
+    CLOVEK *cl; //vytvoreni promenne pro drzeni aktualniho nacteneho zaznamu
 
-    cl = prvni;
-    while (cl != NULL) {
-        fprintf(f, "%s %s %d %d\n", cl->jmeno, cl->prijmeni, cl->vyska, cl->vaha);
-        cl = cl->dalsi;
+    cl = prvni; // nacteme prvni zaznam seznamu jako aktualni
+    while (cl != NULL) { // dokud existuje zaznam v seznamu
+        fprintf(f, "%s %s %d %d\n", cl->jmeno, cl->prijmeni, cl->vyska, cl->vaha); // vlozi do sounoru radek ze zaznamem ve formatu "Jmeno Prijmeni Vyska Vaha"
+        cl = cl->dalsi; // nacte do ukazatele na aktualniho cloveka ukazatel na dalsi zaznam v seznamu
     }
 }
 
-/* Tato funkce vypise vsechny lidi.
+/*
+ * Tato funkce vypise vsechny lidi.
+ * Podle vzorce pro vypocet BMI (VAHA deleno (VYSKA V METRECH na druhou))
+ * Podle BMI zobrazi text "moc hubeny" (pro BMI < 20), "moc tlusty" (pro BMI > 25) nebo "akorat".
+ * Pred kazdym clovekem vypise jeho poradove cislo (od 1).
+ */
 
-   UKOL: Vlozte vzorec pro vypocet BMI podle vzorce VAHA deleno (VYSKA V METRECH na druhou).
-         Pozor ze zde znate VYSKU V CENTIMETRECH a je to int (potrebujete float).
-         Podle BMI zobrazte text "moc hubeny" (pro BMI < 20), "moc tlusty" (pro BMI > 25) nebo "akorat".
-         Pred kazdym clovekem vypiste jeho poradove cislo (od 1). */
 void vypis_vsechny_lidi() {
-    CLOVEK *cl;
-    float bmi = 0;
-    int poradi = 1;
+    CLOVEK *cl; //vytvoreni promenne pro drzeni aktualniho nacteneho zaznamu
+    float bmi = 0; // vytvoreni promenne pro drzeni hodnoty bmi aktualne nacteneho cloveka
+    int poradi = 1; // vytvoreni promenne pro drzeni poradoveho cisla aktualne nacteneho cloveka
 
-    printf("Cislo Jmeno               Prijmeni            Vyska  Vaha   BMI\n");
-    printf("---------------------------------------------------------------\n");
+    printf("Cislo Jmeno               Prijmeni            Vyska  Vaha   BMI\n"); // vypis hlavicky seznamu na obrazovku
+    printf("---------------------------------------------------------------\n"); // oddelovac. Ciste proto aby to bylo na obrazovce hezke :)
 
-    cl = prvni;
-    while (cl != NULL) {
+    cl = prvni; // jako aktualni zaznam nacteme prvni zaznam seznamu
+    while (cl != NULL) {// dokud existuje zaznam v seznamu
         bmi = (float) cl->vaha / ((float) cl->vyska * cl->vyska / 10000); // vypocteme BMI; int musime prevest na float; 10000 = 100 * 100 (protoze vysku v cm delime 100)
-        printf("%5d %-19s %-19s %5d %5d %5.1f", poradi, cl->jmeno, cl->prijmeni, cl->vyska, cl->vaha, bmi); // vypiseme poradi
-        if (bmi < 20) { // vypiseme text
-            printf(" moc hubeny");
+        printf("%5d %-19s %-19s %5d %5d %5.1f", poradi, cl->jmeno, cl->prijmeni, cl->vyska, cl->vaha, bmi); // vypiseme poradi polozky zaznamu a hodnotu bmi
+        if (bmi < 20) { // podminka pro vyhodnoceni bmi
+            printf(" moc hubeny"); // vypis textu
         } else if (bmi > 25) {
             printf(" moc tlusty");
         } else {
             printf(" akorat");
         }
-        printf("\n");
+        printf("\n"); // ukonceni  radku
         poradi++; // zvysime poradi o 1
-        cl = cl->dalsi;
+        cl = cl->dalsi; // nacte do ukazatele na aktualniho cloveka ukazatel na dalsi zaznam v seznamu
     }
 }
 
 /* Tato funkce provede cele nacteni lidi ze souboru. */
 void nacti() {
-    char nazev_souboru[261];
-    FILE *soubor;
+    char nazev_souboru[261]; // promenna typu pole znaku o delce 261 - to v praxi znamena ze so nej muzeme ulozit informaci o maximalni delce 261 znaku
+    FILE *soubor; // promenna pro ukazatel na soubor ze ktereho chceme nacitat
 
     // Uzivatel zada nazev souboru
-    printf("Zadej nazev souboru: ");
-    if (scanf("%260s", nazev_souboru) != 1) {
-        printf("Chyba zadani.\n");
-        return;
+    printf("Zadej nazev souboru: "); // vypis na obrazovku
+    if (scanf("%260s", nazev_souboru) != 1) { // pokud se nepodari nacist zadany text
+        printf("Chyba zadani.\n"); // vypiseme chybu
+        return; //ukoncime funkci
     }
-    getchar();
+    getchar();// odmazeme enter ktery nam zbyl v pameti
 
-    // Otevreme soubor
-    soubor = fopen(nazev_souboru, "r");
-    if (soubor == NULL) {
-        printf("Soubor %s nelze otevrit.\n", nazev_souboru);
-        return;
+    soubor = fopen(nazev_souboru, "r"); // Otevreme soubor v rezimu pro cteni a ulozime pointr na nej do promenne soubor
+    if (soubor == NULL) { // pokud se otevreni nezdarilo
+        printf("Soubor %s nelze otevrit.\n", nazev_souboru); // vypiseme chybu
+        return; // ukoncime funkci
     }
 
     // Nacteme lidi
