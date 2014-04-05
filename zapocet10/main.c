@@ -110,7 +110,7 @@ int main()
 
     vstup = fopen(nazev_souboru, "r");//na techto trech radcich zjistujeme nejkratsi radek pomoci vyse uvedene funkce a hodnotu ulozime do promene r se kterou budeme pracovat
     int r = zjisti_prumerny_radek(vstup);
-    printf("Nejdelsi radek ma: %d znaku\n", r);
+    printf("Prumerny radek ma: %d znaku\n", r);
     fclose(vstup);//soubor musime zavrit, abychom mohli pracovat znovu od zacatku souboru
 
     vstup = fopen(nazev_souboru, "r");//otevreme soubor
@@ -130,6 +130,9 @@ int main()
                     fputc(znak, vystup2);
                 }
                 if (znak == '\n') {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
+                    if (pocet_znaku > r) {
+                        fputc('\n', vystup1);
+                    }
                     pocet_znaku = 0;
                     pocet_radku++;
                 }
