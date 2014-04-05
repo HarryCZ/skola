@@ -85,7 +85,7 @@ int main() {
 	celkem_radku = spocitej_radky(soubor);
 
 	// Overime, ze pocet radku, ktere se maji zobrazit, je v povolenem rozsahu
-	if (pocet_radku < 1 || pocet_radku > celkem_radku || pocet_radku2 < 1 || pocet_radku2 > celkem_radku || (pocet_radku + pocet_radku2) > celkem_radku) {
+	if (pocet_radku < 1 || pocet_radku > celkem_radku || pocet_radku2 > celkem_radku || (pocet_radku + pocet_radku2) > celkem_radku) {
 		printf("Pocet radku musi byt mezi %d a %d.\n", 1, celkem_radku);
 		fclose(soubor); // Soubor je stale otevreni, pred skoncenim ho musime zavrit
 		return 1;
