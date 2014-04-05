@@ -1,155 +1,145 @@
-// test2test.cpp Kvintus František, priklad 10 - tohle si predelejte
+
 
 #include <stdio.h>
 #include <stdlib.h>
 
-//Funkce pro vypocet poctu radku a prumerne delky radku
-
-int pocetr_prumer(FILE *soubor,int volba) {
-
-    int pocetr = 0;
-    int prumer = 0;
+int zjisti_prumerny_radek(FILE *soubor) {// tato funkce zjisti nejkratsi neprazdny radek a vrati pocet znaku v radku
     int znak;
-    int mezisoucet = 0;
+    int pocet_znaku_v_radku = -1;
+    int prumer = 0;
+    int radek = 0;
 
-    znak = fgetc(soubor);
-
-    while (znak != EOF) {
-
-        if (znak == '\n') {
-            pocetr++;
-            mezisoucet = mezisoucet+prumer;
-            prumer = 0;
+    while (znak != EOF) {//cyklus se opakuje dokud neni konec souboru
+        if (znak != '\n') {//tato podminka zamezuje zapocitani zalomeni radku
+            pocet_znaku_v_radku++;
+        }else{
+           radek++;
+           prumer = prumer + pocet_znaku_v_radku;
+           pocet_znaku_v_radku = 0;//pocet znaku musime vynulovat, protoze budeme pocitat dalsi radek
         }
-
-        else prumer++;
-
-    znak = fgetc(soubor);
+        znak = fgetc(soubor);//nacteme dalsi znak
     }
-    mezisoucet = mezisoucet+prumer;
 
-    if (volba == 0 ) return pocetr+1;
-    else return (mezisoucet/(pocetr+1))+(1/2);
+    prumer = prumer / radek;
+
+    return prumer;//vracime pocet znaku v minimalnim radku
 }
 
-//Hlavni funkce main
+int smim_prepsat(char *nazev_souboru) {// tato funkce je zkopirovana z moodlu, je tam i okomentovan
+	FILE *soubor;
+	int volba;
+	int tmp;
 
-int main() {
+	soubor = fopen(nazev_souboru, "r");
+	if (soubor != NULL) {
 
-    FILE *soubor,*vystup1,*vystup2;
-    int n;
-    char nazev[260];
-    int pocetr, prumer;
+		fclose(soubor);
 
+		printf("Soubor '%s' existuje, prepsat? [A/N] ", nazev_souboru);
+		volba = getchar();
 
-    //Otevreni souboru libovolneho nazvu
+		tmp = volba;
+		while (tmp != EOF && tmp != '\n' && tmp != '\r') {
+			tmp = getchar();
+		}
 
-    printf("Zadej nazev souboru: \n");
-    scanf("%259s",nazev);
-    getchar();
+		return volba == 'A' || volba == 'a';
 
+	} else {
+		return 1;
+	}
+}
 
-    //Nacteni radku a prumeru. Tady zbytecne oteviram soubor dvakrat, slo by to i jednou, na rychlost programu si tu nehrajem, tak co
-    //Musim ho vzdy po projeti zavrit a pak zase otevrit
+int delka_vstupu(char *nazev_souboru) {//tato funkce spocita pocet radku v souboru a vrati pocet, v teto funkci pocitany soubor otevrem i zavrem, abychom se souborem mohli pracovat dale od zacatku
+    FILE *soubor;
+    int nacti_znak = 0;
+    int pocet_radku = 1;
 
-    soubor = fopen(nazev, "r");
-    if (soubor == NULL) {
-        printf("Soubor %s neexistuje.\n", nazev);
-        return 0;
-    }
-
-    pocetr = pocetr_prumer(soubor,0);
-    fclose(soubor);
-
-    soubor = fopen(nazev, "r");
-    if (soubor == NULL) {
-        printf("Soubor %s neexistuje.\n", nazev);
-        return 0;
-    }
-
-    prumer = pocetr_prumer(soubor,1);
-    fclose(soubor);
-
-    //Uzivatel zada N a osetrim vstup
-
-    do {
-        printf("Zadej N: ");
-        if (scanf("%d",&n) != 1) {printf("Neplatny vstup.\n"); return 0;}
-        if (n > pocetr) printf("Neplatny vstup. Zadej N znovu.\n");
-    } while (n > pocetr);
-
-
-    //Funkce ze zadani
-
-    soubor = fopen(nazev, "r");
-    if (soubor == NULL) {
-    printf("Soubor %s neexistuje.\n", nazev);
-    return 0;
-    }
-    vystup1 = fopen("vystup1.txt", "w");
-    if (vystup1 == NULL) {
-    printf("Soubor vystup1.txt neexistuje.\n", nazev);
-    return 0;
-    }
-    vystup2 = fopen("vystup2.txt", "w");
-    if (vystup2 == NULL) {
-    printf("Soubor vystup2.txt neexistuje.\n", nazev);
-    return 0;
-    }
-
-    //Kontrola
-
-    printf("pocet radku je: %d a prumer je: %d\n",pocetr,prumer);
-
-
-    //Podminky pro vypis
-
-    int znak;
-    int pocitadlor = 1;
-    int pocitadloz = 0;
-
-    znak = fgetc(soubor);
-    while (znak != EOF && pocitadlor <= n) {
-
-    //Pokud je to mensi jak prumer, zapisuju do vstupu jedna 'x'
-
-            if (pocitadloz < prumer) {
-                if (znak == '\n') {
-                pocitadlor++;
-                fputc('\n',vystup2);
-                fputc('\n',vystup1);
-                pocitadloz=0;
-                } else {
-                fputc('x',vystup1);
-                pocitadloz++;
-                }
-        }
-
-    //Pokud je to vetsi jak prumer, zapisuju do vstupu dva prebytecny znaky
-
-            else {
-                if (znak == '\n') {
-                pocitadlor ++;
-                fputc('\n',vystup2);
-                fputc('\n',vystup1);
-                pocitadloz=0;
-                } else {
-                fputc(znak,vystup2);
-                pocitadloz++;
-                }
+    soubor = fopen(nazev_souboru, "r");//otevreme soubor
+    if (soubor != NULL) {//zjistime zda soubor existuje
+        while (nacti_znak != EOF) {//opakujem dokud neni konec souboru
+            if (nacti_znak == '\n') {// kdz se znak rovna \n zapocitame radek
+                pocet_radku++;
             }
-
-
-    znak = fgetc(soubor);
-
+            nacti_znak = fgetc(soubor);//nacteme dalsi soubor
+        }
+        return pocet_radku;//vracime pocet radku
+    } else {
+        return 0;//vracime nulu pokud soubor neexistuje
     }
+    fclose(soubor);//zavreme soubor
+}
 
-    //Nakonci nezapomenu zavrit soubory
+int existuje_soubor(char *nazev_souboru) {// jednoducha funkce pro zjisteni zda existuje zadany soubor pokud existuje vraci 1 jako true pokud neexistuje vracime 0
+    FILE *soubor;
 
-    fclose(soubor);
-	fclose(vystup1);
-	fclose(vystup2);
+    soubor = fopen(nazev_souboru, "r");//otevreme soubor
+    if (soubor == NULL) {//kdyz se soubor rovna null tak neexistuje, proto vracime 0
+        return 0;
+    } else {
+        return 1;
+    }
+    fclose(soubor);//zavreme soubor
+}
 
+int main()
+{
+    char nazev_souboru[300];
+    int n;
+    FILE *vstup;
+    FILE *vystup1;
+    FILE *vystup2;
 
-	return 0;
+    printf("Zadej nazev vstupu:\n");
+    scanf("%299s", nazev_souboru);
+    getchar();
+    while (!existuje_soubor(nazev_souboru)) {//tento cyklus se opakuje dokud uzivatel nezada nazev existujiciho souboru, ktomu nam poslouzi vyse popsana funkce
+        printf("Soubor %s neexistuje. Zadejte nazev souboru:\n", nazev_souboru);
+        scanf("%299s", nazev_souboru);
+        getchar();
+    }
+    printf("Zadej N:\n");
+    scanf("%d", &n);
+    getchar();
+    while (n >= delka_vstupu(nazev_souboru)) {//tento cyklus se opakuje dokud uzivatel nezada cislo n mensi nez pocet radku ve vstupnim souboru, k tomu nam poslouzi funkce pro spocitani radku
+        printf("N musi byt menci nez %d, zadali jste %d. Zadej N:\n", delka_vstupu(nazev_souboru), n);
+        scanf("%d", &n);
+        getchar();
+    }
+    printf("Pocet radku v souboru je: %d\n", delka_vstupu(nazev_souboru));//zde vypiseme pocet radku ve vstupnim souboru
+
+    vstup = fopen(nazev_souboru, "r");//na techto trech radcich zjistujeme nejkratsi radek pomoci vyse uvedene funkce a hodnotu ulozime do promene r se kterou budeme pracovat
+    int r = zjisti_prumerny_radek(vstup);
+    printf("Nejdelsi radek ma: %d znaku\n", r);
+    fclose(vstup);//soubor musime zavrit, abychom mohli pracovat znovu od zacatku souboru
+
+    vstup = fopen(nazev_souboru, "r");//otevreme soubor
+    if (smim_prepsat("vystup1.txt") && smim_prepsat("vystup2.txt")) {//zjistime zda muzeme vystupni soubory prepsat
+        vystup1 = fopen("vystup1.txt", "w");
+        vystup2 = fopen("vystup2.txt", "w");
+        int znak;
+        int pocet_znaku = 0;
+        int pocet_radku = 1;
+        if (vstup != NULL) {//zjistime, jestli vstupni soubor existuje
+            znak = fgetc(vstup);//nacteme znak
+            while (znak != EOF && pocet_radku <= n) {//opakujem dokud neni konec souboru a dokud je pocet radku mensi rovno nez zadane n
+                pocet_znaku++;//pocet znaku zvisime o jedna
+                if (pocet_znaku <= r) {
+                    fputc(znak, vystup1);
+                }else{
+                    fputc(znak, vystup2);
+                }
+                if (znak == '\n') {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
+                    pocet_znaku = 0;
+                    pocet_radku++;
+                }
+                znak = fgetc(vstup);//nacteme dalsi znak
+            }
+        }
+        fclose(vystup1);
+        fclose(vystup2);
+    }
+    fclose(vstup);
+
+    return 0;
 }
