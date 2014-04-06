@@ -125,11 +125,7 @@ int main()
             while (znak != EOF && pocet_radku <= n) {//opakujem dokud neni konec souboru a dokud je pocet radku mensi rovno nez zadane n
                 pocet_znaku++;//pocet znaku zvisime o jedna
                 if (pocet_znaku <= r) {
-                    if(znak != '\n') {
-                        fputc('x', vystup1);
-                    }else{
-                        fputc(znak, vystup1);
-                    }
+                    fputc(znak, vystup1);
                 }else{
                     fputc(znak, vystup2);
                 }

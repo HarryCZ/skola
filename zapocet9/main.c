@@ -3,26 +3,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int zjisti_prumerny_radek(FILE *soubor) {// tato funkce zjisti nejkratsi neprazdny radek a vrati pocet znaku v radku
+int zjisti_nejkratsi_radek(FILE *soubor) {// tato funkce zjisti nejkratsi neprazdny radek a vrati pocet znaku v radku
     int znak;
     int pocet_znaku_v_radku = -1;
-    int prumer = 0;
-    int radek = 0;
+    int min = 2000;
 
     while (znak != EOF) {//cyklus se opakuje dokud neni konec souboru
         if (znak != '\n') {//tato podminka zamezuje zapocitani zalomeni radku
             pocet_znaku_v_radku++;
         }else{
-           radek++;
-           prumer = prumer + pocet_znaku_v_radku;
+           if (pocet_znaku_v_radku <= min && pocet_znaku_v_radku != 0) {//zde zjistujeme zda spocitane radky jsou mensi nez minimum a pokud ano tak minimum nahradime
+                min = pocet_znaku_v_radku;
+           }
            pocet_znaku_v_radku = 0;//pocet znaku musime vynulovat, protoze budeme pocitat dalsi radek
         }
         znak = fgetc(soubor);//nacteme dalsi znak
     }
-
-    prumer = prumer / radek;
-
-    return prumer;//vracime pocet znaku v minimalnim radku
+    if (pocet_znaku_v_radku <= min && pocet_znaku_v_radku != 0) {//zde musime udelat stejnou podminku jalo predchozi, jinak by nam funkce nefungovala pro posledni radek
+        min = pocet_znaku_v_radku;
+    }
+    return min;//vracime pocet znaku v minimalnim radku
 }
 
 int smim_prepsat(char *nazev_souboru) {// tato funkce je zkopirovana z moodlu, je tam i okomentovan
@@ -109,8 +109,8 @@ int main()
     printf("Pocet radku v souboru je: %d\n", delka_vstupu(nazev_souboru));//zde vypiseme pocet radku ve vstupnim souboru
 
     vstup = fopen(nazev_souboru, "r");//na techto trech radcich zjistujeme nejkratsi radek pomoci vyse uvedene funkce a hodnotu ulozime do promene r se kterou budeme pracovat
-    int r = zjisti_prumerny_radek(vstup);
-    printf("Prumerny radek ma: %d znaku\n", r);
+    int r = zjisti_nejkratsi_radek(vstup);
+    printf("Nejkratsi radek ma: %d znaku\n", r);
     fclose(vstup);//soubor musime zavrit, abychom mohli pracovat znovu od zacatku souboru
 
     vstup = fopen(nazev_souboru, "r");//otevreme soubor
@@ -122,23 +122,21 @@ int main()
         int pocet_radku = 1;
         if (vstup != NULL) {//zjistime, jestli vstupni soubor existuje
             znak = fgetc(vstup);//nacteme znak
-            while (znak != EOF && pocet_radku <= n) {//opakujem dokud neni konec souboru a dokud je pocet radku mensi rovno nez zadane n
-                pocet_znaku++;//pocet znaku zvisime o jedna
-                if (pocet_znaku <= r) {
-                    if(znak != '\n') {
-                        fputc('x', vystup1);
-                    }else{
+            while (znak != EOF) {//opakujem dokud neni konec souboru a dokud je pocet radku mensi rovno nez zadane n
+                if (pocet_radku > n) {
+                    pocet_znaku++;//pocet znaku zvisime o jedna
+                    if (pocet_znaku <= r && pocet_znaku > 0) {//kdyz je pocet znaku mensi nez r tak znak zapiseme do vystupu 1
                         fputc(znak, vystup1);
-                    }
-                }else{
-                    fputc(znak, vystup2);
-                }
-                if (znak == '\n') {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
-                    if (pocet_znaku > r) {
+                    } else if (pocet_znaku == r + 1) {//zde musime zalomit radek ve vystupu 1
                         fputc('\n', vystup1);
-                    }else{
+                    }
+                    if (pocet_znaku > r && znak != '\n') {//kdyz je pocet znaku vetsi nez r zapiseme misto nacteneho znaku znak x do vystupniho souboru 2
+                        fputc(znak, vystup2);
+                    } else if (znak == '\n'){//musime zalomit radek ve vystupu 2
                         fputc('\n', vystup2);
                     }
+                }
+                if (znak == '\n') {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
                     pocet_znaku = 0;
                     pocet_radku++;
                 }

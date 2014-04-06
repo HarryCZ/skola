@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 /* Funkce spocita kolik radku v souboru je. */

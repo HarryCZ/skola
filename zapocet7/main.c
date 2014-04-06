@@ -3,26 +3,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int zjisti_prumerny_radek(FILE *soubor) {// tato funkce zjisti nejkratsi neprazdny radek a vrati pocet znaku v radku
+int zjisti_nejdelsi_radek(FILE *soubor) {// tato funkce zjisti nejkratsi neprazdny radek a vrati pocet znaku v radku
     int znak;
     int pocet_znaku_v_radku = -1;
-    int prumer = 0;
-    int radek = 0;
+    int max = 0;
 
     while (znak != EOF) {//cyklus se opakuje dokud neni konec souboru
         if (znak != '\n') {//tato podminka zamezuje zapocitani zalomeni radku
             pocet_znaku_v_radku++;
         }else{
-           radek++;
-           prumer = prumer + pocet_znaku_v_radku;
+           if (pocet_znaku_v_radku >= max && pocet_znaku_v_radku != 0) {//zde zjistujeme zda spocitane radky jsou mensi nez minimum a pokud ano tak minimum nahradime
+                max = pocet_znaku_v_radku;
+           }
            pocet_znaku_v_radku = 0;//pocet znaku musime vynulovat, protoze budeme pocitat dalsi radek
         }
         znak = fgetc(soubor);//nacteme dalsi znak
     }
-
-    prumer = prumer / radek;
-
-    return prumer;//vracime pocet znaku v minimalnim radku
+    if (pocet_znaku_v_radku >= max && pocet_znaku_v_radku != 0) {//zde musime udelat stejnou podminku jalo predchozi, jinak by nam funkce nefungovala pro posledni radek
+        max = pocet_znaku_v_radku;
+    }
+    return max;//vracime pocet znaku v minimalnim radku
 }
 
 int smim_prepsat(char *nazev_souboru) {// tato funkce je zkopirovana z moodlu, je tam i okomentovan
@@ -86,9 +86,9 @@ int main()
 {
     char nazev_souboru[300];
     int n;
+    char z;
     FILE *vstup;
     FILE *vystup1;
-    FILE *vystup2;
 
     printf("Zadej nazev vstupu:\n");
     scanf("%299s", nazev_souboru);
@@ -106,17 +106,20 @@ int main()
         scanf("%d", &n);
         getchar();
     }
+    printf("Zadej znak:\n");
+    scanf("%c", &z);
+    getchar();
+
     printf("Pocet radku v souboru je: %d\n", delka_vstupu(nazev_souboru));//zde vypiseme pocet radku ve vstupnim souboru
 
     vstup = fopen(nazev_souboru, "r");//na techto trech radcich zjistujeme nejkratsi radek pomoci vyse uvedene funkce a hodnotu ulozime do promene r se kterou budeme pracovat
-    int r = zjisti_prumerny_radek(vstup);
-    printf("Prumerny radek ma: %d znaku\n", r);
+    int r = zjisti_nejdelsi_radek(vstup);
+    printf("Nejdelsi radek ma: %d znaku\n", r);
     fclose(vstup);//soubor musime zavrit, abychom mohli pracovat znovu od zacatku souboru
 
     vstup = fopen(nazev_souboru, "r");//otevreme soubor
-    if (smim_prepsat("vystup1.txt") && smim_prepsat("vystup2.txt")) {//zjistime zda muzeme vystupni soubory prepsat
+    if (smim_prepsat("vystup1.txt")) {//zjistime zda muzeme vystupni soubory prepsat
         vystup1 = fopen("vystup1.txt", "w");
-        vystup2 = fopen("vystup2.txt", "w");
         int znak;
         int pocet_znaku = 0;
         int pocet_radku = 1;
@@ -124,21 +127,15 @@ int main()
             znak = fgetc(vstup);//nacteme znak
             while (znak != EOF && pocet_radku <= n) {//opakujem dokud neni konec souboru a dokud je pocet radku mensi rovno nez zadane n
                 pocet_znaku++;//pocet znaku zvisime o jedna
-                if (pocet_znaku <= r) {
-                    if(znak != '\n') {
-                        fputc('x', vystup1);
-                    }else{
-                        fputc(znak, vystup1);
+                if (znak != '\n') {
+                    fputc(znak, vystup1);
+                }else {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
+                    int i = 0;
+                    while ( i < (r-pocet_znaku)) {
+                        fputc(z, vystup1);
+                        i++;
                     }
-                }else{
-                    fputc(znak, vystup2);
-                }
-                if (znak == '\n') {//kdyz je znak \n vynulujem pocet znaku, abychom mohli pocitat novy radek a zapocitame dalsi radek
-                    if (pocet_znaku > r) {
-                        fputc('\n', vystup1);
-                    }else{
-                        fputc('\n', vystup2);
-                    }
+                    fputc('\n', vystup1);
                     pocet_znaku = 0;
                     pocet_radku++;
                 }
@@ -146,7 +143,6 @@ int main()
             }
         }
         fclose(vystup1);
-        fclose(vystup2);
     }
     fclose(vstup);
 
